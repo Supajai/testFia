@@ -1,0 +1,27 @@
+{
+  "name": "excel-idcard-badge-manager",
+  "version": "1.0.0",
+  "description": "100% Offline Desktop Application for managing and generating Thai ID Card Badges from Excel files",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "keywords": [
+    "electron",
+    "excel",
+    "xlsx",
+    "id-card",
+    "pdf-export",
+    "offline-admin"
+  ],
+  "author": "Antigravity AI",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^31.0.0"
+  },
+  "dependencies": {
+    "html2canvas": "^1.4.1",
+    "jspdf": "^4.2.1",
+    "xlsx": "^0.18.5"
+  }
+}

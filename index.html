@@ -1,0 +1,620 @@
+<!DOCTYPE html>
+<html lang="th">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel ID Card Badge Manager</title>
+  <!-- Google Fonts: Sarabun (Official Thai Standard) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Sarabun:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,600;1,700&display=swap"
+    rel="stylesheet">
+  <!-- Local Stylesheet (100% Offline with Sarabun Fallbacks) -->
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+  <!-- Top Application Header -->
+  <header class="app-header no-print">
+    <div class="brand">
+      <div class="brand-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" />
+          <polyline points="14 2 14 8 20 8" />
+          <path d="M8 13h8" />
+          <path d="M8 17h8" />
+          <path d="M10 9H8" />
+        </svg>
+      </div>
+      <div>
+        <h1 class="brand-title">Excel ID Card Badge Manager</h1>
+        <p class="brand-subtitle">ระบบสร้างและพิมพ์บัตรประจำตัวจากไฟล์ตาราง Excel (.xlsx)</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <!-- Active File & Sheet Selector -->
+      <div class="excel-status-group" id="excelStatusGroup">
+        <div class="api-status-badge" id="excelFileBadge">
+          <span class="status-dot disconnected" id="fileStatusDot"></span>
+          <span id="excelFileNameText">ยังไม่ได้เลือกไฟล์ Excel</span>
+        </div>
+
+        <div class="sheet-select-wrapper" id="sheetSelectWrapper" style="display: none;">
+          <label for="sheetSelect">แผ่นงาน:</label>
+          <select id="sheetSelect" class="select-sheet"></select>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" id="btnCreateTemplate"
+        title="สร้างไฟล์ Excel แม่แบบใหม่สำหรับเริ่มต้นคีย์ข้อมูล">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="18" x2="12" y2="12"></line>
+          <line x1="9" y1="15" x2="15" y2="15"></line>
+        </svg>
+        สร้างไฟล์แม่แบบ (.xlsx)
+      </button>
+
+      <button class="btn btn-primary" id="btnOpenExcel">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+          <line x1="12" y1="11" x2="12" y2="17" />
+          <line x1="9" y1="14" x2="15" y2="14" />
+        </svg>
+        เลือกไฟล์ Excel (.xlsx)
+      </button>
+
+      <button class="btn btn-secondary" id="btnReloadExcel" title="โหลดข้อมูลใหม่จากไฟล์เดิม" disabled>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <polyline points="23 4 23 10 17 10" />
+          <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10" />
+        </svg>
+        รีโหลด
+      </button>
+
+      <!-- Modern Light/Dark Mode Switcher -->
+      <button class="btn btn-theme-toggle" id="btnThemeToggle" title="สลับโหมดสว่าง / มืด">
+        <svg class="icon-sun" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="5"></circle>
+          <line x1="12" y1="1" x2="12" y2="3"></line>
+          <line x1="12" y1="21" x2="12" y2="23"></line>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+          <line x1="1" y1="12" x2="3" y2="12"></line>
+          <line x1="21" y1="12" x2="23" y2="12"></line>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+        </svg>
+        <svg class="icon-moon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+        </svg>
+        <span id="themeToggleText">โหมดสว่าง</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Main Workspace Layout -->
+  <div class="workspace-container">
+
+    <!-- Sidebar: Records List -->
+    <aside class="sidebar no-print">
+      <div class="sidebar-header">
+        <button class="btn btn-add-record" id="btnAddRecord" title="เพิ่มรายชื่อบุคคลใหม่ลงในตาราง">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          + เพิ่มรายชื่อบุคคลใหม่
+        </button>
+        <div class="search-box">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <circle cx="11" cy="11" r="8" />
+            <line x1="21" y1="21" x2="16.65" y2="16.65" />
+          </svg>
+          <input type="text" id="searchInput" placeholder="ค้นหาชื่อ, ตำแหน่ง, แถว..." />
+        </div>
+        <div class="records-count">
+          <span>รายชื่อทั้งหมด</span>
+          <span class="badge" id="recordsBadge">0</span>
+        </div>
+        <div class="sidebar-select-all-bar" id="sidebarSelectAllBar" style="display: none;">
+          <label class="select-all-label">
+            <input type="checkbox" id="chkSelectAllRecords" class="custom-checkbox" />
+            <span id="lblSelectAllText">เลือกทั้งหมด</span>
+          </label>
+          <div class="select-actions-right">
+            <span class="selected-count-badge" id="selectedCountBadge" style="display: none;">0 เลือกแล้ว</span>
+            <button type="button" class="btn-clear-selection" id="btnClearSelection" style="display: none;"
+              title="ยกเลิกการเลือก">ล้าง</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="records-list" id="recordsList">
+        <div class="empty-state">
+          <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="1.5">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+            <polyline points="14 2 14 8 20 8" />
+            <line x1="16" y1="13" x2="8" y2="13" />
+            <line x1="16" y1="17" x2="8" y2="17" />
+          </svg>
+          <p>กรุณากดปุ่ม <strong>"เลือกไฟล์ Excel"</strong> ด้านบนเพื่อเริ่มต้น</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area: Editor & Live Preview -->
+    <main class="main-content">
+
+      <!-- View Selector Tabs & Actions -->
+      <div class="view-tabs no-print">
+        <button class="tab-btn active" id="tabEditor" data-target="editorPanel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+          </svg>
+          แก้ไขข้อมูลในตาราง
+        </button>
+        <button class="tab-btn" id="tabPreview" data-target="previewPanel">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+            <circle cx="12" cy="12" r="3" />
+          </svg>
+          Live Preview บัตรประจำตัว
+        </button>
+        <div class="action-buttons-right">
+          <button class="btn btn-save" id="btnSaveData" disabled>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+              <polyline points="17 21 17 13 7 13 7 21" />
+              <polyline points="7 3 7 8 15 8" />
+            </svg>
+            บันทึกไฟล์ Excel
+          </button>
+          <button class="btn btn-image" id="btnExportPNG" title="บันทึกเป็นรูปภาพความละเอียดสูงสำหรับพิมพ์บัตร">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+              <circle cx="8.5" cy="8.5" r="1.5" />
+              <polyline points="21 15 16 10 5 21" />
+            </svg>
+            Export PNG
+          </button>
+          <button class="btn btn-export" id="btnExportPDF">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+              <polyline points="7 10 12 15 17 10" />
+              <line x1="12" y1="15" x2="12" y2="3" />
+            </svg>
+            Export PDF
+          </button>
+        </div>
+      </div>
+
+      <!-- Editor Panel -->
+      <section class="panel active no-print" id="editorPanel">
+        <div class="panel-card" id="editorContainer">
+          <div class="select-prompt">
+            <svg xmlns="http://www.w3.org/2000/svg" width="56" height="56" viewBox="0 0 24 24" fill="none"
+              stroke="currentColor" stroke-width="1.5">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+              <polyline points="14 2 14 8 20 8" />
+            </svg>
+            <h3>ยังไม่ได้เปิดไฟล์ Excel</h3>
+            <p>กรุณากดปุ่ม <strong>"เลือกไฟล์ Excel (.xlsx)"</strong> ที่มุมบนขวา เพื่อโหลดตารางข้อมูล</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Live Preview Panel (Vertical Thai ID Card Badge Format) -->
+      <section class="panel" id="previewPanel">
+
+        <!-- Top Studio Toolbar Area -->
+        <div class="preview-top-toolbar-area no-print">
+
+          <!-- Clean Studio Toolbar Bar -->
+          <div class="studio-toolbar">
+
+            <!-- Group 0: Card Design Style Theme (สไตล์รูปแบบบัตร) -->
+            <div class="studio-group">
+              <span class="studio-group-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path
+                    d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z">
+                  </path>
+                </svg>
+                สไตล์บัตร:
+              </span>
+              <select id="cardDesignThemeSelect" class="studio-select" title="เลือกรูปแบบ/ดีไซน์บัตรประจำตำแหน่ง">
+                <option value="theme-navy-red" selected>🔵 รูปแบบที่ 1 (มาตรฐาน บน.21 - แนวตั้ง)</option>
+                <option value="theme-gold-executive">👑 รูปแบบที่ 2 (ผู้บังคับบัญชา / VIP - แนวตั้ง แถบเหลือง)</option>
+                <option value="theme-landscape-rtaf">🪪 รูปแบบที่ 3 (แนวนอน - ปรับแต่งพื้นหลังได้)</option>
+              </select>
+            </div>
+
+            <div class="studio-divider"></div>
+
+            <!-- Group 1: Template Manager -->
+            <div class="studio-group">
+              <span class="studio-group-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                  <polyline points="7 3 7 8 15 8"></polyline>
+                </svg>
+                การจัดวาง:
+              </span>
+              <select id="templatePresetSelect" class="studio-select">
+                <optgroup label="เทมเพลตมาตรฐาน" id="optgroupBuiltinTemplates">
+                  <option value="default_rtaf" selected>🌟 บน.21 มาตรฐาน</option>
+                  <option value="large_photo">🌟 รูปถ่ายขนาดใหญ่</option>
+                  <option value="prominent_rank">🌟 เน้นยศตัวหนา</option>
+                  <option value="vip_centered">🌟 แบบทางการ (กึ่งกลางทั้งหมด)</option>
+                  <option value="compact_details">🌟 แบบกะทัดรัด (ข้อมูลครบถ้วน)</option>
+                  <option value="international_joint">🌟 แบบสากล / สองภาษา (Inter)</option>
+                </optgroup>
+                <optgroup label="เทมเพลตที่บันทึกไว้" id="optgroupUserTemplates"></optgroup>
+              </select>
+              <button type="button" class="studio-btn studio-btn-primary" id="btnSaveTemplate"
+                title="บันทึกการจัดวางปัจจุบันเป็นเทมเพลต">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path>
+                  <polyline points="17 21 17 13 7 13 7 21"></polyline>
+                </svg>
+                <span>บันทึก</span>
+              </button>
+              <button type="button" class="studio-btn studio-btn-danger" id="btnDeleteTemplate" title="ลบเทมเพลตนี้"
+                style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+
+            <div class="studio-divider"></div>
+
+            <!-- Group 2: Card Dimensions & Customizer Toggle -->
+            <div class="studio-group">
+              <span class="studio-group-label">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                  <path d="M3 9h18"></path>
+                  <path d="M9 21V9"></path>
+                </svg>
+                ขนาด:
+              </span>
+              <select id="cardSizePreset" class="studio-select">
+                <option value="standard" selected>5.5 × 8.5 ซม. (มาตรฐาน)</option>
+                <option value="custom">กำหนดขนาดเอง...</option>
+              </select>
+
+              <!-- Custom Dimension Inputs -->
+              <div class="custom-dimensions-wrapper" id="customDimensionsWrapper" style="display: none;">
+                <div class="dim-input-wrapper">
+                  <input type="number" id="customWidthInput" value="55" min="20" max="300" step="0.5" />
+                </div>
+                <span class="dim-times">×</span>
+                <div class="dim-input-wrapper">
+                  <input type="number" id="customHeightInput" value="85" min="20" max="400" step="0.5" />
+                </div>
+                <span style="font-size: 11px; color: var(--text-muted);">มม.</span>
+              </div>
+            </div>
+
+            <div class="studio-divider"></div>
+
+            <!-- Group 3: Visual Edit & Actions -->
+            <div class="studio-group">
+              <button type="button" class="studio-btn studio-btn-toggle" id="btnToggleVisualEdit"
+                title="คลิกเพื่อลากย้ายตำแหน่งและปรับขนาดรูปภาพบนบัตร">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M12 20h9"></path>
+                  <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <span id="visualEditText">🎨 ปรับแต่งอิสระ</span>
+              </button>
+              <button type="button" class="studio-btn studio-btn-reset" id="btnResetLayout"
+                title="รีเซ็ตตำแหน่งกลับเป็นค่ามาตรฐาน" style="display: none;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+                  <path d="M3 3v5h5"></path>
+                </svg>
+                <span>รีเซ็ต</span>
+              </button>
+            </div>
+
+            <div class="studio-right-slot">
+              <div class="card-dimensions-badge" id="cardDimensionsBadge">
+                <span>55.0 × 85.0 mm</span>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Floating Modern Visual Edit Inspector Toolbar -->
+          <div class="visual-edit-inspector" id="visualEditInspector" style="display: none;">
+            <div class="inspector-chip" id="inspectorSelectedItemName">
+              <span class="chip-dot"></span>
+              <strong id="selectedElementLabel">กรอบรูปถ่าย</strong>
+            </div>
+
+            <!-- Photo Size Controls -->
+            <div class="inspector-control-group" id="inspectorPhotoSizeGroup">
+              <span class="control-group-title">ขนาดรูป:</span>
+              <label for="photoWidthSlider">กว้าง</label>
+              <input type="range" id="photoWidthSlider" min="70" max="240" value="125" step="1"
+                class="inspector-slider" />
+              <span id="photoWidthVal" class="slider-val">125px</span>
+              <label for="photoHeightSlider">สูง</label>
+              <input type="range" id="photoHeightSlider" min="90" max="280" value="160" step="1"
+                class="inspector-slider" />
+              <span id="photoHeightVal" class="slider-val">160px</span>
+            </div>
+
+            <!-- Logo Size Controls -->
+            <div class="inspector-control-group" id="inspectorLogoSizeGroup" style="display: none;">
+              <span class="control-group-title">ขนาดโลโก้:</span>
+              <label for="logoWidthSlider">กว้าง</label>
+              <input type="range" id="logoWidthSlider" min="30" max="250" value="85" step="1"
+                class="inspector-slider" />
+              <span id="logoWidthVal" class="slider-val">85px</span>
+              <label for="logoHeightSlider">สูง</label>
+              <input type="range" id="logoHeightSlider" min="30" max="150" value="76" step="1"
+                class="inspector-slider" />
+              <span id="logoHeightVal" class="slider-val">76px</span>
+            </div>
+
+            <!-- Font & Typography Controls -->
+            <div class="inspector-control-group" id="inspectorFontSizeGroup" style="display: none;">
+              <span class="control-group-title">ฟอนต์:</span>
+              <div class="stepper-group">
+                <button type="button" class="btn-nudge" id="btnFontSizeDec" title="ลดขนาดฟอนต์">−</button>
+                <span id="fontSizeVal" class="slider-val">24px</span>
+                <button type="button" class="btn-nudge" id="btnFontSizeInc" title="เพิ่มขนาดฟอนต์">+</button>
+              </div>
+
+              <!-- Format Toggles -->
+              <button type="button" class="btn-format-toggle" id="btnFontWeightToggle" title="สลับตัวหนา / ตัวธรรมดา">
+                <strong>B</strong>
+              </button>
+              <button type="button" class="btn-format-toggle" id="btnFontStyleToggle" title="สลับตัวเอียง / ตัวตรง">
+                <em>I</em>
+              </button>
+
+              <!-- Text Color Picker -->
+              <div class="color-picker-wrapper" title="เลือกสีตัวอักษร">
+                <input type="color" id="textColorPicker" value="#0f172a" class="inspector-color-input" />
+              </div>
+
+              <!-- Alignment Buttons -->
+              <div class="align-btn-group">
+                <button type="button" class="btn-align-toggle" id="btnAlignLeft" title="จัดชิดซ้าย">⯇</button>
+                <button type="button" class="btn-align-toggle active" id="btnAlignCenter" title="จัดกึ่งกลาง">⯀</button>
+                <button type="button" class="btn-align-toggle" id="btnAlignRight" title="จัดชิดขวา">⯈</button>
+              </div>
+            </div>
+
+            <div class="inspector-actions">
+              <button type="button" class="btn-center-element" id="btnCenterElement" title="จัดกึ่งกลางการวาง">
+                <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none"
+                  stroke="currentColor" stroke-width="2">
+                  <line x1="18" y1="10" x2="6" y2="10"></line>
+                  <line x1="21" y1="6" x2="3" y2="6"></line>
+                  <line x1="21" y1="14" x2="3" y2="14"></line>
+                  <line x1="18" y1="18" x2="6" y2="18"></line>
+                </svg>
+                จัดกึ่งกลาง
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="document-wrapper">
+          <div class="id-card-badge canva-theme" id="printableArea">
+
+            <!-- Optional Custom Attached Background Layer -->
+            <div class="card-custom-bg-layer" id="cardCustomBgLayer" style="display: none;"></div>
+
+            <!-- Top Navy Header: Logo on Left, Title on Right -->
+            <div class="card-top-navy-header">
+              <div class="header-logo-block" id="headerLogoBlock">
+                <img class="header-logo-img draggable-card-item" id="cardLogoImg" data-layout-key="logo"
+                  src="assets/logo.png" alt="โลโก้หน่วยงาน" />
+                <div class="logo-resize-handle" id="logoResizeHandle" title="คลิกลากมุมนี้เพื่อปรับขนาดโลโก้"></div>
+              </div>
+              <div class="header-title-block">
+                <span class="header-title-text draggable-card-item" id="cardOrgTitle"
+                  data-layout-key="orgTitle">บน.21</span>
+              </div>
+            </div>
+
+            <!-- Card Body: Left Red Stripe + Right White Area -->
+            <div class="card-main-body">
+
+              <!-- Left Vertical Crimson Red Stripe with Order Number Badge -->
+              <div class="card-left-red-stripe">
+                <div class="stripe-order-badge draggable-card-item" id="cardStripeOrderBadge"
+                  data-layout-key="stripeOrder" title="ตัวเลขลำดับบนแถบสี">
+                  <span id="cardStripeOrderNum" class="stripe-order-num order-1">1</span>
+                </div>
+              </div>
+
+              <!-- Right Main Content Area -->
+              <div class="card-right-content">
+
+                <!-- Profile Avatar Sharp Rectangular Container -->
+                <div class="card-avatar-frame draggable-card-item" id="cardAvatarFrame" data-layout-key="photo">
+                  <img id="docImagePreview" class="card-avatar-img" src="" alt="รูปถ่ายประจำตัว"
+                    style="display: none;" />
+                  <div id="docImagePlaceholder" class="card-avatar-placeholder">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none"
+                    stroke="currentColor" stroke-width="1.5">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                      <circle cx="12" cy="7" r="4" />
+                    </svg>
+                  </div>
+                  <!-- Interactive Corner Resize Handle for Photo Frame -->
+                  <div class="photo-resize-handle" id="photoResizeHandle" title="คลิกลากมุมนี้เพื่อปรับขนาดรูปภาพ">
+                  </div>
+                </div>
+
+                <!-- Center Identity Information -->
+                <div class="card-identity-block">
+                  <div class="card-rank draggable-card-item" id="cardRank" data-layout-key="rank">ยศ</div>
+                  <div class="card-thai-fullname draggable-card-item" id="cardThaiFullName" data-layout-key="thaiName">
+                    ชื่อนามสกุล</div>
+                  <div class="card-eng-fullname draggable-card-item" id="cardEngFullName" data-layout-key="engName">ชื่อ
+                    ภาษาอังกฤษ</div>
+                </div>
+
+                <!-- Dynamic Extra Details List (If extra columns exist) -->
+                <div class="card-extra-fields" id="cardExtraFields"></div>
+
+                <!-- Bottom-Right Remark, Department & Expiry Info -->
+                <div class="card-bottom-right-block draggable-card-item" id="cardBottomRightBlock"
+                  data-layout-key="bottomBlock">
+                  <div class="card-note-line" id="cardNoteLine">
+                    <span class="meta-val" id="cardNoteVal"></span>
+                  </div>
+                  <div class="card-dept-line" id="cardDeptLine">
+                    <span class="meta-val" id="cardDeptVal"></span>
+                  </div>
+                  <div class="card-expiry-line" id="cardExpiryLine">
+                    <span class="meta-label">วันหมดอายุ : </span>
+                    <span class="meta-val" id="cardExpiryVal"></span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Landscape Card Container (Dedicated structure for Style 3) -->
+            <div class="card-landscape-layout" id="cardLandscapeLayout" style="display: none;">
+              <!-- Top & Middle Content Area -->
+              <div class="landscape-main-grid">
+                <!-- Left Photo & Doc Number Column -->
+                <div class="landscape-photo-col">
+                  <div class="landscape-avatar-frame draggable-card-item" id="cardLandscapeAvatarFrame" data-layout-key="photo" title="กรอบรูปถ่ายประจำตัว">
+                    <img id="docLandscapeImagePreview" class="landscape-avatar-img" src="" alt="รูปถ่ายประจำตัว" style="display: none;" />
+                    <div id="docLandscapeImagePlaceholder" class="card-avatar-placeholder">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                        <circle cx="12" cy="7" r="4" />
+                      </svg>
+                    </div>
+                    <!-- Corner Resize Handle for Photo Frame -->
+                    <div class="photo-resize-handle" id="landPhotoResizeHandle" title="คลิกลากมุมนี้เพื่อปรับขนาดรูปภาพ"></div>
+                  </div>
+                  <div class="landscape-doc-num draggable-card-item" id="cardLandscapeDocNum" data-layout-key="docNum" title="เลขที่ใต้รูป">
+                    เลขที่ <span id="cardLandscapeDocNumVal">๑๑/๖๘</span>
+                  </div>
+                </div>
+
+                <!-- Right Information Column -->
+                <div class="landscape-info-col">
+                  <!-- Header Row: Org Title + Logo -->
+                  <div class="landscape-header-row">
+                    <div class="landscape-org-title draggable-card-item" id="cardLandscapeOrgTitle" data-layout-key="orgTitle" title="ชื่อหน่วยงาน">กองบิน 21</div>
+                    <div class="landscape-logo-wrapper draggable-card-item" id="cardLandscapeLogoWrapper" data-layout-key="logo" title="ตราสัญลักษณ์ / โลโก้">
+                      <img class="landscape-logo-img" id="cardLandscapeLogoImg" src="assets/logo_wing21_shield.png" alt="โลโก้ กองบิน 21" />
+                      <div class="logo-resize-handle" id="landLogoResizeHandle" title="คลิกลากมุมนี้เพื่อปรับขนาดโลโก้"></div>
+                    </div>
+                  </div>
+
+                  <!-- Details Rows -->
+                  <div class="landscape-details-block" id="cardLandscapeDetailsBlock">
+                    <div class="landscape-detail-line landscape-name-line draggable-card-item" id="cardLandscapeNameLine" data-layout-key="thaiName" title="ชื่อ-นามสกุล">
+                      <span class="landscape-label">ชื่อ</span>
+                      <span class="landscape-val" id="cardLandscapeFullName">นายนพกด กินแซ่บ</span>
+                    </div>
+                    <div class="landscape-detail-line landscape-period-line draggable-card-item" id="cardLandscapePeriodLine" data-layout-key="period" title="ระยะเวลาการใช้บัตร">
+                      <span class="landscape-val" id="cardLandscapePeriod">ฝึกตั้งแต่ ๒๑ ธ.ค. ๖๙ ถึง ๓๑ ธ.ค. ๗๐</span>
+                    </div>
+                    <div class="landscape-detail-line landscape-workplace-line draggable-card-item" id="cardLandscapeWorkplaceLine" data-layout-key="workplace" title="สถานที่ปฏิบัติงาน">
+                      <span class="landscape-label">สถานที่ปฏิบัติงาน</span>
+                      <span class="landscape-val" id="cardLandscapeWorkplace">นหก.สก.ยน</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bottom Yellow Accent Bar (Full Width Edge-to-Edge, Movable Container) -->
+              <div class="landscape-bottom-bar draggable-card-item" id="cardLandscapeBottomBar" data-layout-key="bottomBar" title="แถบสีด้านล่างบัตร">
+                <div class="landscape-role-banner draggable-card-item" id="cardLandscapeRoleBanner" data-layout-key="roleBanner" title="ข้อความบนแถบสีเหลือง">นักศึกษาฝึกงาน</div>
+                <div class="landscape-order-box draggable-card-item" id="cardLandscapeOrderBox" data-layout-key="orderBox" title="กล่องลำดับ">
+                  <span id="cardLandscapeOrderVal">๑</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Save Template Modal Dialog -->
+  <div class="modal-overlay no-print" id="saveTemplateModal" style="display: none;">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3>💾 บันทึกการจัดวางเป็นเทมเพลตใหม่</h3>
+        <button type="button" class="modal-close" id="btnCloseSaveTemplateModal">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p style="color: var(--text-secondary); font-size: 13px; margin-bottom: 12px;">
+          บันทึกตำแหน่งของวัตถุ ขนาดรูปภาพ ขนาดโลโก้ และการจัดฟอนต์ทั้งหมดเก็บไว้ เพื่อเรียกกลับมาใช้ได้ทุกเมื่อ:
+        </p>
+        <div class="form-group">
+          <label for="templateNameInput">ชื่อเทมเพลต:</label>
+          <input type="text" id="templateNameInput" placeholder="เช่น แบบกองบิน 21, แบบติดรูปใหญ่พิเศษ..."
+            class="form-input" style="width: 100%; margin-top: 4px;" />
+        </div>
+      </div>
+      <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 16px;">
+        <button type="button" class="btn btn-secondary" id="btnCancelSaveTemplate">ยกเลิก</button>
+        <button type="button" class="btn btn-primary" id="btnConfirmSaveTemplate">บันทึกเทมเพลต</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Container -->
+  <div class="toast-container no-print" id="toastContainer"></div>
+
+  <!-- High-Resolution Canvas & PDF Generation Libraries (100% Local Offline Bundled) -->
+  <script src="libs/xlsx.full.min.js"></script>
+  <script src="libs/html2canvas.min.js"></script>
+  <script src="libs/jspdf.umd.min.js"></script>
+
+  <!-- Client Application Script -->
+  <script src="app.js"></script>
+</body>
+
+</html>
