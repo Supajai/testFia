@@ -24,7 +24,7 @@ const DEFAULT_PORTRAIT_LAYOUT = {
 
 const DEFAULT_LANDSCAPE_LAYOUT = {
   photo: { x: 0, y: 0, w: 125, h: 155 },
-  logo: { x: 0, y: 0, w: 72, h: 64 },
+  logo: { x: 0, y: 0, w: 68, h: 68 },
   orgTitle: { x: 0, y: 0, fontSize: 38, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -136,7 +136,7 @@ const BUILTIN_TEMPLATES = {
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
       photo: { x: 0, y: 0, w: 138, h: 165 },
-      logo: { x: 0, y: 0, w: 72, h: 64 },
+      logo: { x: 0, y: 0, w: 70, h: 70 },
       orgTitle: { x: 0, y: 0, fontSize: 36, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -153,7 +153,7 @@ const BUILTIN_TEMPLATES = {
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
       photo: { x: 0, y: 0, w: 125, h: 155 },
-      logo: { x: 0, y: 0, w: 76, h: 68 },
+      logo: { x: 0, y: 0, w: 68, h: 68 },
       orgTitle: { x: 0, y: 0, fontSize: 40, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 23, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -3565,8 +3565,11 @@ function setCroppedAvatarImage(imageUrl) {
   img.crossOrigin = 'anonymous';
   img.onload = () => {
     try {
-      const photoW = (state.customLayout.photo && state.customLayout.photo.w) || 125;
-      const photoH = (state.customLayout.photo && state.customLayout.photo.h) || 160;
+      const currentTheme = (state.selectedRecord && state.selectedRecord['รูปแบบบัตร']) || state.cardTheme || 'theme-navy-red';
+      const isLandscape = (currentTheme === 'theme-landscape-rtaf');
+
+      const photoW = (state.customLayout && state.customLayout.photo && state.customLayout.photo.w) || 125;
+      const photoH = (state.customLayout && state.customLayout.photo && state.customLayout.photo.h) || (isLandscape ? 155 : 160);
       const targetRatio = photoW / photoH;
       const currentRatio = img.width / img.height;
 
@@ -3582,19 +3585,19 @@ function setCroppedAvatarImage(imageUrl) {
         sWidth = img.width;
         sHeight = img.width / targetRatio;
         sx = 0;
-        sy = Math.max(0, (img.height - sHeight) * 0.15); // gentle upper face bias
+        sy = Math.max(0, (img.height - sHeight) * 0.12); // gentle upper face bias
       }
 
       const canvas = document.createElement('canvas');
-      canvas.width = Math.round(photoW * 3.5); // High-res 300+ DPI
-      canvas.height = Math.round(photoH * 3.5);
+      canvas.width = Math.round(photoW * 4); // Ultra-crisp 4x resolution (350+ DPI)
+      canvas.height = Math.round(photoH * 4);
       const ctx = canvas.getContext('2d');
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
       // Draw cleanly cropped portrait rectangle without any stretching
       ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
-      const croppedBase64 = canvas.toDataURL('image/jpeg', 0.98);
+      const croppedBase64 = canvas.toDataURL('image/png'); // Lossless PNG for razor sharpness
 
       if (elements.docImagePreview) {
         elements.docImagePreview.src = croppedBase64;
@@ -3737,12 +3740,13 @@ async function captureCardCanvas() {
 
   try {
     const canvas = await window.html2canvas(cardElem, {
-      scale: 3, // 300+ DPI
+      scale: 3.5, // 350+ DPI ultra sharpness
       width: targetWidth,
       height: targetHeight,
       useCORS: true,
       allowTaint: true,
       backgroundColor: '#ffffff',
+      imageTimeout: 0,
       logging: false,
       onclone: (clonedDoc) => {
         const clonedCard = clonedDoc.getElementById('printableArea');
@@ -4117,9 +4121,12 @@ function applyCustomLayoutToDOM() {
       if (layout.logo.w) logoWrapper.style.width = `${layout.logo.w}px`;
       if (layout.logo.h) logoWrapper.style.height = `${layout.logo.h}px`;
     }
-    if (logoImg && layout.logo) {
-      if (layout.logo.w) logoImg.style.width = `${layout.logo.w}px`;
-      if (layout.logo.h) logoImg.style.height = `${layout.logo.h}px`;
+    if (logoImg) {
+      logoImg.style.maxWidth = '100%';
+      logoImg.style.maxHeight = '100%';
+      logoImg.style.width = 'auto';
+      logoImg.style.height = 'auto';
+      logoImg.style.objectFit = 'contain';
     }
 
     // Org Title (กองบิน 21)
