@@ -23,13 +23,13 @@ const DEFAULT_PORTRAIT_LAYOUT = {
 };
 
 const DEFAULT_LANDSCAPE_LAYOUT = {
-  photo: { x: 0, y: 0, w: 125, h: 155 },
+  photo: { x: 0, y: 0, w: 136, h: 245 },
   logo: { x: 0, y: 0, w: 68, h: 68 },
   orgTitle: { x: 0, y: 0, fontSize: 38, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   period: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
-  docNum: { x: 0, y: 0, fontSize: 16, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
+  docNum: { x: 0, y: 0, fontSize: 18, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
   bottomBar: { x: 0, y: 0, height: 52, color: '#ffeb11' },
   roleBanner: { x: 0, y: 0, fontSize: 30, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
   orderBox: { x: 0, y: 0, fontSize: 22, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' }
@@ -135,13 +135,13 @@ const BUILTIN_TEMPLATES = {
     themeGroup: 'landscape',
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
-      photo: { x: 0, y: 0, w: 138, h: 165 },
+      photo: { x: 0, y: 0, w: 136, h: 250 },
       logo: { x: 0, y: 0, w: 70, h: 70 },
       orgTitle: { x: 0, y: 0, fontSize: 36, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       period: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
-      docNum: { x: 0, y: 0, fontSize: 16, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
+      docNum: { x: 0, y: 0, fontSize: 18, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
       bottomBar: { x: 0, y: 0, height: 52, color: '#ffeb11' },
       roleBanner: { x: 0, y: 0, fontSize: 30, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
       orderBox: { x: 0, y: 0, fontSize: 22, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' }
@@ -152,16 +152,16 @@ const BUILTIN_TEMPLATES = {
     themeGroup: 'landscape',
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
-      photo: { x: 0, y: 0, w: 125, h: 155 },
+      photo: { x: 0, y: 0, w: 136, h: 245 },
       logo: { x: 0, y: 0, w: 68, h: 68 },
       orgTitle: { x: 0, y: 0, fontSize: 40, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 23, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       workplace: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       period: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
-      docNum: { x: 0, y: 0, fontSize: 16, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
-      bottomBar: { x: 0, y: 0, height: 54, color: '#ffeb11' },
-      roleBanner: { x: 0, y: 0, fontSize: 32, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
-      orderBox: { x: 0, y: 0, fontSize: 24, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' }
+      docNum: { x: 0, y: 0, fontSize: 18, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
+      bottomBar: { x: 0, y: 0, height: 52, color: '#ffeb11' },
+      roleBanner: { x: 0, y: 0, fontSize: 30, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'center' },
+      orderBox: { x: 0, y: 0, fontSize: 22, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'center' }
     }
   }
 };
@@ -4225,16 +4225,16 @@ function applyCustomLayoutToDOM() {
     const photoFrame = document.getElementById('cardLandscapeAvatarFrame');
     if (photoFrame && layout.photo) {
       photoFrame.style.transform = `translate(${layout.photo.x || 0}px, ${layout.photo.y || 0}px)`;
-      photoFrame.style.width = `${layout.photo.w || 125}px`;
-      photoFrame.style.height = `${layout.photo.h || 155}px`;
+      photoFrame.style.width = `${layout.photo.w || 136}px`;
+      photoFrame.style.height = `${layout.photo.h || 245}px`;
     }
 
     // Doc Num Under Photo
     const docNumElem = document.getElementById('cardLandscapeDocNum');
     if (docNumElem && layout.docNum) {
       docNumElem.style.transform = `translate(${layout.docNum.x || 0}px, ${layout.docNum.y || 0}px)`;
-      docNumElem.style.fontSize = `${layout.docNum.fontSize || 14}px`;
-      docNumElem.style.fontWeight = layout.docNum.fontWeight || '700';
+      docNumElem.style.fontSize = `${layout.docNum.fontSize || 18}px`;
+      docNumElem.style.fontWeight = layout.docNum.fontWeight || '800';
       docNumElem.style.fontStyle = layout.docNum.fontStyle || 'normal';
       docNumElem.style.color = layout.docNum.color || '#000000';
       docNumElem.style.textAlign = layout.docNum.textAlign || 'center';
