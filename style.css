@@ -2489,10 +2489,3 @@ body.theme-dark .cal-day-cell {
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
   }
 }
-
-min-height: 556px !important;
-margin: 40px auto !important;
-border-radius: 0 !important;
-box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
-}
-}
