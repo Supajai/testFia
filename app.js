@@ -23,7 +23,7 @@ const DEFAULT_PORTRAIT_LAYOUT = {
 };
 
 const DEFAULT_LANDSCAPE_LAYOUT = {
-  photo: { x: 0, y: 0, w: 136, h: 245 },
+  photo: { x: 0, y: 0, w: 136, h: 165 },
   logo: { x: 0, y: 0, w: 68, h: 68 },
   orgTitle: { x: 0, y: 0, fontSize: 38, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
   thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -135,7 +135,7 @@ const BUILTIN_TEMPLATES = {
     themeGroup: 'landscape',
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
-      photo: { x: 0, y: 0, w: 136, h: 250 },
+      photo: { x: 0, y: 0, w: 145, h: 175 },
       logo: { x: 0, y: 0, w: 70, h: 70 },
       orgTitle: { x: 0, y: 0, fontSize: 36, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 20, fontWeight: '800', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -152,7 +152,7 @@ const BUILTIN_TEMPLATES = {
     themeGroup: 'landscape',
     layout: {
       ...DEFAULT_LANDSCAPE_LAYOUT,
-      photo: { x: 0, y: 0, w: 136, h: 245 },
+      photo: { x: 0, y: 0, w: 136, h: 165 },
       logo: { x: 0, y: 0, w: 68, h: 68 },
       orgTitle: { x: 0, y: 0, fontSize: 40, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
       thaiName: { x: 0, y: 0, fontSize: 23, fontWeight: '900', fontStyle: 'normal', color: '#000000', textAlign: 'left' },
@@ -3690,8 +3690,8 @@ function setCroppedAvatarImage(imageUrl) {
       const currentTheme = (state.selectedRecord && state.selectedRecord['รูปแบบบัตร']) || state.cardTheme || 'theme-navy-red';
       const isLandscape = (currentTheme === 'theme-landscape-rtaf');
 
-      const photoW = (state.customLayout && state.customLayout.photo && state.customLayout.photo.w) || 125;
-      const photoH = (state.customLayout && state.customLayout.photo && state.customLayout.photo.h) || (isLandscape ? 155 : 160);
+      const photoW = (state.customLayout && state.customLayout.photo && state.customLayout.photo.w) || (isLandscape ? 136 : 125);
+      const photoH = (state.customLayout && state.customLayout.photo && state.customLayout.photo.h) || (isLandscape ? 165 : 160);
       const targetRatio = photoW / photoH;
 
       // Auto-detect and trim any paper/scanner white or off-white border margins from the uploaded photo
@@ -4226,7 +4226,7 @@ function applyCustomLayoutToDOM() {
     if (photoFrame && layout.photo) {
       photoFrame.style.transform = `translate(${layout.photo.x || 0}px, ${layout.photo.y || 0}px)`;
       photoFrame.style.width = `${layout.photo.w || 136}px`;
-      photoFrame.style.height = `${layout.photo.h || 245}px`;
+      photoFrame.style.height = `${layout.photo.h || 165}px`;
     }
 
     // Doc Num Under Photo
