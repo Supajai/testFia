@@ -3549,7 +3549,97 @@ function renderLivePreview() {
   applyCustomLayoutToDOM();
 }
 
-// Smart Portrait Rectangular Auto-Cropper for Profile Photo (Dynamically matches current frame ratio, zero stretch)
+// Helper to auto-detect and trim scanner/passport white borders around uploaded photos
+function getTrimmedPhotoBounds(img) {
+  try {
+    const testCanvas = document.createElement('canvas');
+    const maxDim = 300;
+    const scale = Math.min(1, maxDim / Math.max(img.width, img.height));
+    const tw = Math.max(1, Math.round(img.width * scale));
+    const th = Math.max(1, Math.round(img.height * scale));
+    testCanvas.width = tw;
+    testCanvas.height = th;
+    const ctx = testCanvas.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(img, 0, 0, tw, th);
+
+    const imgData = ctx.getImageData(0, 0, tw, th).data;
+    function isEdgeWhite(x, y) {
+      const idx = (y * tw + x) * 4;
+      const r = imgData[idx];
+      const g = imgData[idx + 1];
+      const b = imgData[idx + 2];
+      const a = imgData[idx + 3];
+      if (a < 25) return true; // transparent edge
+      return (r > 238 && g > 238 && b > 238);
+    }
+
+    const maxTrimX = Math.floor(tw * 0.08); // max 8% trim from outer edges
+    const maxTrimY = Math.floor(th * 0.08);
+
+    let trimLeft = 0;
+    for (let x = 0; x < maxTrimX; x++) {
+      let countWhite = 0;
+      const sampleStep = Math.max(1, Math.floor(th / 30));
+      let totalSamples = 0;
+      for (let y = 0; y < th; y += sampleStep) {
+        totalSamples++;
+        if (isEdgeWhite(x, y)) countWhite++;
+      }
+      if (countWhite / totalSamples > 0.85) trimLeft = x + 1;
+      else break;
+    }
+
+    let trimRight = 0;
+    for (let x = tw - 1; x >= tw - maxTrimX; x--) {
+      let countWhite = 0;
+      const sampleStep = Math.max(1, Math.floor(th / 30));
+      let totalSamples = 0;
+      for (let y = 0; y < th; y += sampleStep) {
+        totalSamples++;
+        if (isEdgeWhite(x, y)) countWhite++;
+      }
+      if (countWhite / totalSamples > 0.85) trimRight = (tw - x);
+      else break;
+    }
+
+    let trimTop = 0;
+    for (let y = 0; y < maxTrimY; y++) {
+      let countWhite = 0;
+      const sampleStep = Math.max(1, Math.floor(tw / 30));
+      let totalSamples = 0;
+      for (let x = 0; x < tw; x += sampleStep) {
+        totalSamples++;
+        if (isEdgeWhite(x, y)) countWhite++;
+      }
+      if (countWhite / totalSamples > 0.85) trimTop = y + 1;
+      else break;
+    }
+
+    let trimBottom = 0;
+    for (let y = th - 1; y >= th - maxTrimY; y--) {
+      let countWhite = 0;
+      const sampleStep = Math.max(1, Math.floor(tw / 30));
+      let totalSamples = 0;
+      for (let x = 0; x < tw; x += sampleStep) {
+        totalSamples++;
+        if (isEdgeWhite(x, y)) countWhite++;
+      }
+      if (countWhite / totalSamples > 0.85) trimBottom = (th - y);
+      else break;
+    }
+
+    return {
+      sx: Math.round(trimLeft / scale),
+      sy: Math.round(trimTop / scale),
+      sWidth: Math.max(10, Math.round((tw - trimLeft - trimRight) / scale)),
+      sHeight: Math.max(10, Math.round((th - trimTop - trimBottom) / scale))
+    };
+  } catch (e) {
+    return { sx: 0, sy: 0, sWidth: img.width, sHeight: img.height };
+  }
+}
+
+// Smart Portrait Rectangular Auto-Cropper for Profile Photo (Dynamically matches current frame ratio, auto-trims white margins, zero stretch)
 function setCroppedAvatarImage(imageUrl) {
   if (!imageUrl) {
     if (elements.docImagePreview) elements.docImagePreview.style.display = 'none';
@@ -3571,21 +3661,26 @@ function setCroppedAvatarImage(imageUrl) {
       const photoW = (state.customLayout && state.customLayout.photo && state.customLayout.photo.w) || 125;
       const photoH = (state.customLayout && state.customLayout.photo && state.customLayout.photo.h) || (isLandscape ? 155 : 160);
       const targetRatio = photoW / photoH;
-      const currentRatio = img.width / img.height;
 
-      let sx, sy, sWidth, sHeight;
+      // Auto-detect and trim any paper/scanner white border margins from the uploaded photo
+      const bounds = getTrimmedPhotoBounds(img);
+      const baseW = bounds.sWidth;
+      const baseH = bounds.sHeight;
+      const currentRatio = baseW / baseH;
+
+      let cropX, cropY, cropW, cropH;
       if (currentRatio > targetRatio) {
         // Image is wider than target frame: crop left/right sides equally
-        sHeight = img.height;
-        sWidth = img.height * targetRatio;
-        sx = (img.width - sWidth) / 2;
-        sy = 0;
+        cropH = baseH;
+        cropW = baseH * targetRatio;
+        cropX = bounds.sx + (baseW - cropW) / 2;
+        cropY = bounds.sy;
       } else {
         // Image is taller than target frame: upper focus for face
-        sWidth = img.width;
-        sHeight = img.width / targetRatio;
-        sx = 0;
-        sy = Math.max(0, (img.height - sHeight) * 0.12); // gentle upper face bias
+        cropW = baseW;
+        cropH = baseW / targetRatio;
+        cropX = bounds.sx;
+        cropY = bounds.sy + Math.max(0, (baseH - cropH) * 0.12);
       }
 
       const canvas = document.createElement('canvas');
@@ -3595,8 +3690,8 @@ function setCroppedAvatarImage(imageUrl) {
       ctx.imageSmoothingEnabled = true;
       ctx.imageSmoothingQuality = 'high';
 
-      // Draw cleanly cropped portrait rectangle without any stretching
-      ctx.drawImage(img, sx, sy, sWidth, sHeight, 0, 0, canvas.width, canvas.height);
+      // Draw cleanly cropped portrait rectangle edge-to-edge without any border gap
+      ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, canvas.width, canvas.height);
       const croppedBase64 = canvas.toDataURL('image/png'); // Lossless PNG for razor sharpness
 
       if (elements.docImagePreview) {
