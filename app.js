@@ -3549,7 +3549,7 @@ function renderLivePreview() {
   applyCustomLayoutToDOM();
 }
 
-// Helper to auto-detect and trim scanner/passport white borders around uploaded photos
+// Helper to auto-detect and trim scanner/passport white or off-white borders around uploaded photos
 function getTrimmedPhotoBounds(img) {
   try {
     const testCanvas = document.createElement('canvas');
@@ -3563,76 +3563,108 @@ function getTrimmedPhotoBounds(img) {
     ctx.drawImage(img, 0, 0, tw, th);
 
     const imgData = ctx.getImageData(0, 0, tw, th).data;
-    function isEdgeWhite(x, y) {
+
+    // Sample top-left corner color
+    const cR = imgData[0];
+    const cG = imgData[1];
+    const cB = imgData[2];
+    const cA = imgData[3];
+    const isCornerLight = (cA < 30) || ((cR + cG + cB) / 3 > 180);
+
+    function isMarginPixel(x, y) {
       const idx = (y * tw + x) * 4;
       const r = imgData[idx];
       const g = imgData[idx + 1];
       const b = imgData[idx + 2];
       const a = imgData[idx + 3];
-      if (a < 25) return true; // transparent edge
-      return (r > 238 && g > 238 && b > 238);
+      if (a < 30) return true; // transparent
+      const brightness = (r + g + b) / 3;
+      if (brightness > 195) return true; // white, off-white, light gray margin
+      if (isCornerLight) {
+        const colorDiff = Math.abs(r - cR) + Math.abs(g - cG) + Math.abs(b - cB);
+        if (colorDiff < 45) return true;
+      }
+      return false;
     }
 
-    const maxTrimX = Math.floor(tw * 0.08); // max 8% trim from outer edges
-    const maxTrimY = Math.floor(th * 0.08);
+    const maxTrimX = Math.floor(tw * 0.35); // allow scanning up to 35% of width
+    const maxTrimY = Math.floor(th * 0.35); // allow scanning up to 35% of height
 
     let trimLeft = 0;
     for (let x = 0; x < maxTrimX; x++) {
-      let countWhite = 0;
-      const sampleStep = Math.max(1, Math.floor(th / 30));
+      let countMargin = 0;
+      const sampleStep = Math.max(1, Math.floor(th / 40));
       let totalSamples = 0;
       for (let y = 0; y < th; y += sampleStep) {
         totalSamples++;
-        if (isEdgeWhite(x, y)) countWhite++;
+        if (isMarginPixel(x, y)) countMargin++;
       }
-      if (countWhite / totalSamples > 0.85) trimLeft = x + 1;
-      else break;
+      if (countMargin / totalSamples > 0.65) {
+        trimLeft = x + 1;
+      } else {
+        break;
+      }
     }
 
     let trimRight = 0;
     for (let x = tw - 1; x >= tw - maxTrimX; x--) {
-      let countWhite = 0;
-      const sampleStep = Math.max(1, Math.floor(th / 30));
+      let countMargin = 0;
+      const sampleStep = Math.max(1, Math.floor(th / 40));
       let totalSamples = 0;
       for (let y = 0; y < th; y += sampleStep) {
         totalSamples++;
-        if (isEdgeWhite(x, y)) countWhite++;
+        if (isMarginPixel(x, y)) countMargin++;
       }
-      if (countWhite / totalSamples > 0.85) trimRight = (tw - x);
-      else break;
+      if (countMargin / totalSamples > 0.65) {
+        trimRight = (tw - x);
+      } else {
+        break;
+      }
     }
 
     let trimTop = 0;
     for (let y = 0; y < maxTrimY; y++) {
-      let countWhite = 0;
-      const sampleStep = Math.max(1, Math.floor(tw / 30));
+      let countMargin = 0;
+      const sampleStep = Math.max(1, Math.floor(tw / 40));
       let totalSamples = 0;
       for (let x = 0; x < tw; x += sampleStep) {
         totalSamples++;
-        if (isEdgeWhite(x, y)) countWhite++;
+        if (isMarginPixel(x, y)) countMargin++;
       }
-      if (countWhite / totalSamples > 0.85) trimTop = y + 1;
-      else break;
+      if (countMargin / totalSamples > 0.65) {
+        trimTop = y + 1;
+      } else {
+        break;
+      }
     }
 
     let trimBottom = 0;
     for (let y = th - 1; y >= th - maxTrimY; y--) {
-      let countWhite = 0;
-      const sampleStep = Math.max(1, Math.floor(tw / 30));
+      let countMargin = 0;
+      const sampleStep = Math.max(1, Math.floor(tw / 40));
       let totalSamples = 0;
       for (let x = 0; x < tw; x += sampleStep) {
         totalSamples++;
-        if (isEdgeWhite(x, y)) countWhite++;
+        if (isMarginPixel(x, y)) countMargin++;
       }
-      if (countWhite / totalSamples > 0.85) trimBottom = (th - y);
-      else break;
+      if (countMargin / totalSamples > 0.65) {
+        trimBottom = (th - y);
+      } else {
+        break;
+      }
     }
 
+    // Add safe 1px inset to ensure zero edge bleed
+    const safeTrimLeft = trimLeft > 0 ? trimLeft + 1 : 0;
+    const safeTrimRight = trimRight > 0 ? trimRight + 1 : 0;
+    const safeTrimTop = trimTop > 0 ? trimTop + 1 : 0;
+    const safeTrimBottom = trimBottom > 0 ? trimBottom + 1 : 0;
+
     return {
-      sx: Math.round(trimLeft / scale),
-      sy: Math.round(trimTop / scale),
-      sWidth: Math.max(10, Math.round((tw - trimLeft - trimRight) / scale)),
-      sHeight: Math.max(10, Math.round((th - trimTop - trimBottom) / scale))
+      sx: Math.round(safeTrimLeft / scale),
+      sy: Math.round(safeTrimTop / scale),
+      sWidth: Math.max(20, Math.round((tw - safeTrimLeft - safeTrimRight) / scale)),
+      sHeight: Math.max(20, Math.round((th - safeTrimTop - safeTrimBottom) / scale))
     };
   } catch (e) {
     return { sx: 0, sy: 0, sWidth: img.width, sHeight: img.height };
@@ -3662,7 +3694,7 @@ function setCroppedAvatarImage(imageUrl) {
       const photoH = (state.customLayout && state.customLayout.photo && state.customLayout.photo.h) || (isLandscape ? 155 : 160);
       const targetRatio = photoW / photoH;
 
-      // Auto-detect and trim any paper/scanner white border margins from the uploaded photo
+      // Auto-detect and trim any paper/scanner white or off-white border margins from the uploaded photo
       const bounds = getTrimmedPhotoBounds(img);
       const baseW = bounds.sWidth;
       const baseH = bounds.sHeight;
